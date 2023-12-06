@@ -1,10 +1,4 @@
-const express = require('express')
-
-const apiRoutes = require('./api/server')
-
-const server = express()
-
-server.use('/api', apiRoutes)
+const server = require('./api/server')
 
 const port = 5000
 

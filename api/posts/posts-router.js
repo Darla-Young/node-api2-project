@@ -1,7 +1,6 @@
 const express = require('express')
 const Posts = require('./posts-model')
-const server = express()
-server.use(express.json())
+const router = express.Router()
 
 /*
 database helpers:
@@ -16,7 +15,7 @@ database helpers:
 */
 
 // GET all posts
-server.get('/', (req, res) => {
+router.get('/', (req, res) => {
   Posts.find()
     .then(posts => res.json(posts))
     .catch(err => {
@@ -29,7 +28,7 @@ server.get('/', (req, res) => {
 })
 
 // GET a post
-server.get('/:id', (req, res) => {
+router.get('/:id', (req, res) => {
   Posts.findById(req.params.id)
   .then(post => {
     if (!post) {
@@ -49,21 +48,25 @@ server.get('/:id', (req, res) => {
 })
 
 // POST (create) post
-/*
-/
-If the request body is missing the `title` or `contents` property:
-  - respond with HTTP status code `400` (Bad Request).
-  - return the following JSON: `{ message: "Please provide title and contents for the post" }`.
-
-If the information about the _post_ is valid:
-  - save the new _post_ the the database.
-  - return HTTP status code `201` (Created).
-  - return the newly created _post_.
-
-If there's an error while saving the _post_:
-  - respond with HTTP status code `500` (Server Error).
-  - return the following JSON: `{ message: "There was an error while saving the post to the database" }`.
-*/
+router.post('/', (req, res) => {
+  if (!req.body.title || !req.body.contents) {
+    res.status(400).json({
+      message: "Please provide title and contents for the post",
+    })
+  }
+  else {
+    Posts.insert(req.body)
+    .then(({id}) => Posts.findById(id))
+    .then(post => res.status(201).json(post))
+    .catch(err => {
+      res.status(500).json({
+        message: "There was an error while saving the post to the database",
+        err: err.message,
+        stack: err.stack,
+      })
+    })
+  }
+})
 
 // PUT (update) post
 /*
@@ -110,10 +113,4 @@ If there's an error in retrieving the _comments_ from the database:
   - return the following JSON: `{ message: "The comments information could not be retrieved" }`.
 */
 
-server.use('*', (req, res) => {
-  res.status(404).json({
-    message: 'request not found',
-  })
-})
-
-module.exports = server
+module.exports = router

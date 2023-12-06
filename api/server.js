@@ -1,9 +1,15 @@
 const express = require('express')
-
 const postRoutes = require('./posts/posts-router')
+const server = express()
 
-const router = express.Router()
+server.use(express.json())
 
-router.use('/posts', postRoutes)
+server.use('/api/posts', postRoutes)
 
-module.exports = router
+server.use('*', (req, res) => {
+  res.status(404).json({
+    message: 'request not found',
+  })
+})
+
+module.exports = server
