@@ -123,15 +123,25 @@ router.delete('/:id', async (req, res) => {
 })
 
 // GET comments associated with a post
-/*
-/:id/comments
-If the _post_ with the specified `id` is not found:
-  - return HTTP status code `404` (Not Found).
-  - return the following JSON: `{ message: "The post with the specified ID does not exist" }`.
-
-If there's an error in retrieving the _comments_ from the database:
-  - respond with HTTP status code `500`.
-  - return the following JSON: `{ message: "The comments information could not be retrieved" }`.
-*/
+router.get('/:id/comments', async (req, res) => {
+  const { id } = req.params
+  const post = await Posts.findById(id)
+  if (!post) {
+    res.status(404).json({
+      message: "The post with the specified ID does not exist",
+    })
+  }
+  else {
+    Posts.findPostComments(id)
+    .then(comments => res.json(comments))
+    .catch(err => {
+      res.status(500).json({
+        message: "The comments information could not be retrieved",
+        err: err.message,
+        stack: err.stack,
+      })
+    })
+  }
+})
 
 module.exports = router
