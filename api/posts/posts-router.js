@@ -17,14 +17,14 @@ database helpers:
 // GET all posts
 router.get('/', (req, res) => {
   Posts.find()
-    .then(posts => res.json(posts))
-    .catch(err => {
-      res.status(500).json({
-        message: "The posts information could not be retrieved",
-        err: err.message,
-        stack: err.stack,
-      })
+  .then(posts => res.json(posts))
+  .catch(err => {
+    res.status(500).json({
+      message: "The posts information could not be retrieved",
+      err: err.message,
+      stack: err.stack,
     })
+  })
 })
 
 // GET a post
@@ -69,20 +69,37 @@ router.post('/', (req, res) => {
 })
 
 // PUT (update) post
+router.put('/:id', async (req, res) => {
+  const { id } = req.params
+  const { title, contents } = req.body
+  const post = await Posts.findById(id)
+
+  if (!title || !contents) {
+    res.status(400).json({
+      message: "Please provide title and contents for the post",
+    })
+  }
+
+  else if (!post) {
+    res.status(404).json({
+      message: "The post with the specified ID does not exist",
+    })
+  }
+
+  else {
+    Posts.update(id, req.body)
+    .then(() => Posts.findById(id))
+    .then(post => res.json(post))
+    .catch(err => {
+      res.status(500).json({
+        message: "The post information could not be modified",
+        err: err.message,
+        stack: err.stack,
+      })
+    })
+  }
+})
 /*
-/:id
-If the _post_ with the specified `id` is not found:
-  - return HTTP status code `404` (Not Found).
-  - return the following JSON: `{ message: "The post with the specified ID does not exist" }`.
-
-If the request body is missing the `title` or `contents` property:
-  - respond with HTTP status code `400` (Bad Request).
-  - return the following JSON: `{ message: "Please provide title and contents for the post" }`.
-
-If there's an error when updating the _post_:
-  - respond with HTTP status code `500`.
-  - return the following JSON: `{ message: "The post information could not be modified" }`.
-
 If the post is found and the new information is valid:
   - update the post document in the database using the new information sent in the `request body`.
   - return HTTP status code `200` (OK).
