@@ -99,24 +99,28 @@ router.put('/:id', async (req, res) => {
     })
   }
 })
-/*
-If the post is found and the new information is valid:
-  - update the post document in the database using the new information sent in the `request body`.
-  - return HTTP status code `200` (OK).
-  - return the newly updated _post_.
-*/
 
 // DELETE post
-/*
-/:id
-If the _post_ with the specified `id` is not found:
-  - return HTTP status code `404` (Not Found).
-  - return the following JSON: `{ message: "The post with the specified ID does not exist" }`.
-
-If there's an error in removing the _post_ from the database:
-  - respond with HTTP status code `500`.
-  - return the following JSON: `{ message: "The post could not be removed" }`.
-*/
+router.delete('/:id', async (req, res) => {
+  const { id } = req.params
+  const post = await Posts.findById(id)
+  if (!post) {
+    res.status(404).json({
+      message: "The post with the specified ID does not exist"
+    })
+  }
+  else {
+    Posts.remove(id)
+    .then(() => res.json(post))
+    .catch(err => {
+      res.status(500).json({
+        message: "The post could not be removed",
+        err: err.message,
+        stack: err.stack,
+      })
+    })
+  }
+})
 
 // GET comments associated with a post
 /*
