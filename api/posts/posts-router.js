@@ -29,16 +29,24 @@ server.get('/', (req, res) => {
 })
 
 // GET a post
-/*
-/:id
-If the _post_ with the specified `id` is not found:
-  - return HTTP status code `404` (Not Found).
-  - return the following JSON: `{ message: "The post with the specified ID does not exist" }`.
-
-If there's an error in retrieving the _post_ from the database:
-  - respond with HTTP status code `500`.
-  - return the following JSON: `{ message: "The post information could not be retrieved" }`.
-*/
+server.get('/:id', (req, res) => {
+  Posts.findById(req.params.id)
+  .then(post => {
+    if (!post) {
+      res.status(404).json({
+        message: "The post with the specified ID does not exist",
+      })
+    }
+    else res.json(post)
+  })
+  .catch(err => {
+    res.status(500).json({
+      message: "The post information could not be retrieved",
+      err: err.message,
+      stack: err.stack,
+    })
+  })
+})
 
 // POST (create) post
 /*
