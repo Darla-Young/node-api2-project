@@ -1,5 +1,5 @@
 const express = require('express')
-const posts = require('./posts-model')
+const Posts = require('./posts-model')
 const server = express()
 server.use(express.json())
 
@@ -13,16 +13,24 @@ database helpers:
   findPostComments(postId) = [comments]
   findCommentById(id)
   insertComment(comment)
+*/
 
 // GET all posts
-/*
-If there's an error in retrieving the _posts_ from the database:
-  - respond with HTTP status code `500`.
-  - return the following JSON: `{ message: "The posts information could not be retrieved" }`.
-*/
+server.get('/', (req, res) => {
+  Posts.find()
+    .then(posts => res.json(posts))
+    .catch(err => {
+      res.status(500).json({
+        message: "The posts information could not be retrieved",
+        err: err.message,
+        stack: err.stack,
+      })
+    })
+})
 
 // GET a post
 /*
+/:id
 If the _post_ with the specified `id` is not found:
   - return HTTP status code `404` (Not Found).
   - return the following JSON: `{ message: "The post with the specified ID does not exist" }`.
@@ -34,6 +42,7 @@ If there's an error in retrieving the _post_ from the database:
 
 // POST (create) post
 /*
+/
 If the request body is missing the `title` or `contents` property:
   - respond with HTTP status code `400` (Bad Request).
   - return the following JSON: `{ message: "Please provide title and contents for the post" }`.
@@ -50,6 +59,7 @@ If there's an error while saving the _post_:
 
 // PUT (update) post
 /*
+/:id
 If the _post_ with the specified `id` is not found:
   - return HTTP status code `404` (Not Found).
   - return the following JSON: `{ message: "The post with the specified ID does not exist" }`.
@@ -70,6 +80,7 @@ If the post is found and the new information is valid:
 
 // DELETE post
 /*
+/:id
 If the _post_ with the specified `id` is not found:
   - return HTTP status code `404` (Not Found).
   - return the following JSON: `{ message: "The post with the specified ID does not exist" }`.
@@ -81,6 +92,7 @@ If there's an error in removing the _post_ from the database:
 
 // GET comments associated with a post
 /*
+/:id/comments
 If the _post_ with the specified `id` is not found:
   - return HTTP status code `404` (Not Found).
   - return the following JSON: `{ message: "The post with the specified ID does not exist" }`.
